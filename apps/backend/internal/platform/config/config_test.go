@@ -15,7 +15,6 @@ func TestLoad(t *testing.T) {
 		name       string
 		env        map[string]string
 		wantErr    bool
-		wantPanic  bool
 		wantPort   string
 		wantAppEnv string
 		wantDBURL  string
@@ -38,9 +37,9 @@ func TestLoad(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:      "missing database url panics",
-			env:       map[string]string{},
-			wantPanic: true,
+			name:    "missing database url",
+			env:     map[string]string{},
+			wantErr: true,
 		},
 		{
 			name: "valid overrides",
@@ -64,12 +63,6 @@ func TestLoad(t *testing.T) {
 				t.Setenv(key, val)
 			}
 
-			if tt.wantPanic {
-				assert.Panics(t, func() {
-					_, _ = config.Load()
-				})
-				return
-			}
 			cfg, err := config.Load()
 
 			if tt.wantErr {

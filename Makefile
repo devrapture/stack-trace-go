@@ -19,7 +19,7 @@ db-down: ## Stop local Postgres
 	docker compose --profile dev stop postgres-dev
 
 psql: ## Open a psql shell against local postgres
-	docker compose --profile dev exec postgres-dev psql -U wordsearch -d wordsearch
+	docker compose --profile dev exec postgres-dev psql -U $${POSTGRES_USER:-wordsearch} -d $${POSTGRES_DB:-wordsearch}
 
 tidy: ## Sync go.mod/go.sum
 	cd $(MIGRATE_DIR) && go mod tidy

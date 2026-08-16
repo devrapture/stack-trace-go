@@ -16,10 +16,15 @@ type Config struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
+	databaseURL, err := requireEnv("DATABASE_URL")
+	if err != nil {
+		return nil, err
+	}
+
 	config := &Config{
 		AppEnv:      getEnv("APP_ENV", "development"),
 		Port:        getEnv("PORT", "8080"),
-		DatabaseURL: mustGetEnv("DATABASE_URL"),
+		DatabaseURL: databaseURL,
 	}
 	return config, config.validate()
 }
@@ -44,11 +49,10 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-func mustGetEnv(key string) string {
+func requireEnv(key string) (string, error) {
 	val := os.Getenv(key)
 	if val == "" {
-		panic(fmt.Sprintf("required environment variable %q is not set", key))
+		return "", fmt.Errorf("required environment variable %q is not set", key)
 	}
-
-	return val
+	return val, nil
 }

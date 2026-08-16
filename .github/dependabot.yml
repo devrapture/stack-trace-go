@@ -21,3 +21,17 @@ updates:
       interval: weekly
     labels:
       - dependencies
+
+  - package-ecosystem: docker
+    directory: apps/backend
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
