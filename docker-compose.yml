@@ -1,0 +1,103 @@
+name: stack-trace
+
+x-api-build: &api-build
+  context: ./apps/backend
+  dockerfile: Dockerfile
+
+x-api-environment: &api-environment
+  PORT: 8080
+
+x-postgres-environment: &postgres-environment
+  POSTGRES_USER: ${POSTGRES_USER:-wordsearch}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wordsearch}
+  POSTGRES_DB: ${POSTGRES_DB:-wordsearch}
+
+x-postgres-healthcheck: &postgres-healthcheck
+  test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+  interval: 5s
+  timeout: 3s
+  retries: 10
+
+services:
+  api-dev:
+    profiles: [dev]
+    build:
+      <<: *api-build
+      target: development
+    environment:
+      <<: *api-environment
+      APP_ENV: development
+      DATABASE_URL: postgresql://${POSTGRES_USER:-wordsearch}:${POSTGRES_PASSWORD:-wordsearch}@postgres-dev:5432/${POSTGRES_DB:-wordsearch}?sslmode=disable
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    command: ["air", "-c", ".air.toml"]
+    init: true
+    stdin_open: true
+    tty: true
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/backend
+          target: /app
+          initial_sync: true
+          ignore:
+            - .air.toml
+            - .env
+            - go.mod
+            - go.sum
+            - tmp/
+        - action: sync+restart
+          path: ./apps/backend/.air.toml
+          target: /app/.air.toml
+        - action: rebuild
+          path: ./apps/backend/go.mod
+        - action: rebuild
+          path: ./apps/backend/go.sum
+
+  postgres-dev:
+    profiles: [dev]
+    image: postgres:18
+    environment: *postgres-environment
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql
+    healthcheck: *postgres-healthcheck
+
+  api-prod:
+    profiles: [prod]
+    build:
+      <<: *api-build
+      target: production
+    environment:
+      <<: *api-environment
+      APP_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-wordsearch}:${POSTGRES_PASSWORD:-wordsearch}@postgres-prod:5432/${POSTGRES_DB:-wordsearch}?sslmode=disable}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      postgres-prod:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres-prod:
+    profiles: [prod]
+    image: postgres:18
+    environment: *postgres-environment
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql
+    healthcheck: *postgres-healthcheck
+    restart: unless-stopped
+
+volumes:
+  go-mod-cache:
+  go-build-cache:
+  postgres-dev-data:
+    name: stack-trace_wordsearch-pgdata
+  postgres-prod-data:
