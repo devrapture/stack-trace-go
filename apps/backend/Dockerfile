@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
 FROM base AS development
-ARG AIR_VERSION=v1.67.3
+ARG AIR_VERSION=v1.67.1
 RUN go install github.com/air-verse/air@${AIR_VERSION}
 
 COPY . .
