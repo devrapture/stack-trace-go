@@ -1,3 +1,4 @@
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/devrapture/stack-trace?utm_source=oss&utm_medium=github&utm_campaign=devrapture%2Fstack-trace&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 # Stack Trace
 
 Stack Trace is a Go service built with Gin, Zap, and PostgreSQL. The repository
@@ -7,7 +8,7 @@ Compose file.
 ## Requirements
 
 - Docker with Docker Compose 2.22 or newer
-- Go 1.25.5 for running the backend outside Docker
+- Go 1.26.6 for running the backend outside Docker
 - Air for hot reload when running the backend outside Docker
 - `make` for the convenience commands
 
@@ -94,13 +95,19 @@ the host. Copy it to `apps/backend/.env` and adjust the values as needed.
 Check that the API is running:
 
 ```sh
-curl http://localhost:8080/api/v1/health
+curl http://localhost:8080/api/v1/healthz
 ```
 
 Expected response:
 
 ```json
 {"message":"OK"}
+```
+
+Readiness check (returns 200 when the database is reachable):
+
+```sh
+curl http://localhost:8080/api/v1/readyz
 ```
 
 ## Local backend development
@@ -128,8 +135,8 @@ make test-verbose  # Run tests with verbose output
 make test-coverage # Run tests with coverage
 ```
 
-The continuous integration workflow runs backend tests, `go vet`,
-golangci-lint, and the frontend lint, type-check, and build commands.
+The continuous integration workflow runs backend tests, `go vet`, and
+golangci-lint.
 
 ## Project structure
 
@@ -138,9 +145,9 @@ golangci-lint, and the frontend lint, type-check, and build commands.
 ├── apps/
 │   ├── backend/
 │   │   ├── cmd/api/           # API entry point
-│   │   ├── cmd/worker/        # Worker entry point
+│   │   ├── cmd/worker/        # Worker entry point (not yet implemented)
 │   │   └── internal/platform/ # Configuration, HTTP, logging, and utilities
-│   └── frontend/              # Frontend application
+│   └── frontend/              # Frontend application (scaffolded)
 ├── docker-compose.yml         # Development and production profiles
 └── Makefile                   # Development and quality commands
 ```
