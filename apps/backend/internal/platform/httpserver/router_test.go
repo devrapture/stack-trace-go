@@ -9,12 +9,13 @@ import (
 	"github.com/devrapture/stack-trace/internal/platform/httpserver"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 //nolint:gosec // test-only URL with fake credentials
 const testDatabaseURL = "postgres://user:example@localhost:5432/testdb"
 
-func setupRouter() *gin.Engine {
+func setupRouter(db *gorm.DB) *gin.Engine {
 	cfg := &config.Config{
 		AppEnv:      "development",
 		Port:        "8080",
@@ -23,13 +24,15 @@ func setupRouter() *gin.Engine {
 
 	logger := zap.NewNop()
 
-	return httpserver.Setup(cfg, logger)
+	gin.SetMode(gin.TestMode)
+
+	return httpserver.Setup(cfg, db, logger)
 }
 
 func TestHealth(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter(nil)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/health", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/healthz", nil)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
@@ -40,9 +43,9 @@ func TestHealth(t *testing.T) {
 }
 
 func TestRequestIDHeaderIsSet(t *testing.T) {
-	router := setupRouter()
+	router := setupRouter(nil)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/health", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/healthz", nil)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
@@ -54,5 +57,3 @@ func TestRequestIDHeaderIsSet(t *testing.T) {
 		)
 	}
 }
-
-

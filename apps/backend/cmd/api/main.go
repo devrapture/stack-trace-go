@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/devrapture/stack-trace/internal/platform/config"
+	"github.com/devrapture/stack-trace/internal/platform/database"
 	"github.com/devrapture/stack-trace/internal/platform/httpserver"
 	"github.com/devrapture/stack-trace/internal/platform/logger"
 	"github.com/gin-gonic/gin"
@@ -37,12 +38,26 @@ func run() error {
 	defer flushLog(logger)
 	logger.Info("starting stack trace server", zap.String("APP_ENV", cfg.AppEnv), zap.String("PORT", cfg.Port))
 
+	db, err := database.ConnectDb(cfg)
+	if err != nil {
+		logger.Error("Failed to initialize database", zap.Error(err))
+		return err
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		logger.Error("Failed to access database connection pool", zap.Error(err))
+		return err
+	}
+	defer func() {
+		_ = sqlDB.Close()
+	}()
+
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	if cfg.IsProduction() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	r := httpserver.Setup(cfg, logger)
+	r := httpserver.Setup(cfg, db, logger)
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           r.Handler(),

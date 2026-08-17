@@ -1,14 +1,16 @@
 package httpserver
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/devrapture/stack-trace/internal/platform/config"
+	"github.com/devrapture/stack-trace/internal/platform/database"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
-func Setup(cfg *config.Config, logger *zap.Logger) *gin.Engine {
+func Setup(cfg *config.Config, db *gorm.DB, logger *zap.Logger) *gin.Engine {
 	r := gin.New()
 	r.Use(
 		gin.Recovery(),
@@ -17,9 +19,11 @@ func Setup(cfg *config.Config, logger *zap.Logger) *gin.Engine {
 	)
 	v1 := r.Group("/api/v1")
 	{
-		v1.GET("/health", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"message": "OK"})
-		})
+		v1.
+			GET("/healthz", HealthzHandler()).
+			GET("/readyz", ReadyzHandler(func(ctx context.Context) error {
+				return database.Ping(ctx, db)
+			}))
 	}
 
 	return r
