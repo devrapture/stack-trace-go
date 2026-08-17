@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} \
     go build -trimpath -ldflags="-s -w" -o /bin/server ./cmd/api
 
-FROM alpine:3.22 AS production
+FROM alpine:3.24 AS production
 
 RUN apk add --no-cache ca-certificates tzdata \
     && addgroup -S app \
