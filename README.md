@@ -1,3 +1,4 @@
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/devrapture/stack-trace?utm_source=oss&utm_medium=github&utm_campaign=devrapture%2Fstack-trace&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 # Stack Trace
 
 Stack Trace is a Go service built with Gin, Zap, and PostgreSQL. The repository
