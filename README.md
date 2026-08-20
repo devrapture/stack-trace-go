@@ -70,7 +70,7 @@ Compose:
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `APP_PORT` | `8080` | Host port mapped to the API |
-| `POSTGRES_PORT` | `5432` | Development PostgreSQL host port |
+| `POSTGRES_PORT` | `5433` | Development PostgreSQL host port (avoids colliding with a local Homebrew/Postgres.app instance on 5432) |
 | `POSTGRES_USER` | `wordsearch` | PostgreSQL user |
 | `POSTGRES_PASSWORD` | `wordsearch` | PostgreSQL password |
 | `POSTGRES_DB` | `wordsearch` | PostgreSQL database |
@@ -116,23 +116,52 @@ To run the API without Docker, start PostgreSQL and then launch Air from the
 backend directory:
 
 ```sh
-make db-up
+make dev-up
 cd apps/backend
 air
 ```
 
-Make sure `DATABASE_URL` in `apps/backend/.env` points to the published
-development database port.
+`make dev-up` starts Postgres and creates the Atlas development database
+(`wordsearch_dev`) if it is missing. Make sure `DATABASE_URL` in
+`apps/backend/.env` points to the published development database port
+(`5433` by default). Host-side tools (Atlas, `air` outside Compose) must
+use that port; `localhost:5432` is often a separate Homebrew or
+Postgres.app cluster that does not have the `wordsearch` role.
+
+### Database migrations
+
+Install the [Atlas CLI](https://atlasgo.io/getting-started#installation), run
+`make dev-up`, then:
+
+```sh
+make migrate-diff NAME=<description>  # generate a migration from GORM models
+make migrate-up                       # apply pending migrations
+make migrate-down                     # rollback the last migration
+make migrate-status                   # show migration status
+```
+
+Production equivalents (`migrate-prod-up`, `migrate-prod-down`,
+`migrate-prod-status`) read `DATABASE_URL` and `DEV_DATABASE_URL` from the
+environment.
+
+## Database helpers
+
+```sh
+make db-up   # Start Postgres
+make db-down # Stop Postgres
+make psql    # Open a psql shell against local Postgres
+```
 
 ## Quality checks
 
 ```sh
-make fmt           # Format Go source
-make vet           # Run go vet
-make lint          # Run the pinned golangci-lint version
-make test          # Run tests
-make test-verbose  # Run tests with verbose output
-make test-coverage # Run tests with coverage
+make tidy           # Sync go.mod/go.sum
+make fmt            # Format Go source
+make vet            # Run go vet
+make lint           # Run the pinned golangci-lint version
+make test           # Run tests
+make test-verbose   # Run tests with verbose output
+make test-coverage  # Run tests with coverage
 ```
 
 The continuous integration workflow runs backend tests, `go vet`, and

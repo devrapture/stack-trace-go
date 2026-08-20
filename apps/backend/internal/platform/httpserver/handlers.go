@@ -11,7 +11,7 @@ type ReadinessChecker func(ctx context.Context) error
 
 func HealthzHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "OK"})
+		c.JSON(http.StatusOK, gin.H{"message": "ok"})
 	}
 }
 

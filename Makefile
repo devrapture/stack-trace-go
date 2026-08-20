@@ -1,7 +1,10 @@
-.PHONY: dev prod down db-up db-down psql tidy fmt vet lint test test-verbose test-coverage
+.PHONY: dev prod down db-up dev-up db-down psql tidy fmt vet lint test test-verbose test-coverage \
+	migrate-diff migrate-up migrate-down migrate-status migrate-prod-up migrate-prod-down migrate-prod-status
 
 MIGRATE_DIR := apps/backend
 GOLANGCI_LINT_VERSION := v2.12.2
+POSTGRES_USER ?= wordsearch
+POSTGRES_DEV_DB ?= wordsearch_dev
 
 dev: ## Run the development stack with Air hot reload
 	docker compose --profile dev up --build --watch --remove-orphans
@@ -14,6 +17,13 @@ down: ## Stop either Compose stack and remove its containers
 	
 db-up: ## Start local Postgres
 	docker compose --profile dev up -d --wait --wait-timeout 30 postgres-dev
+
+dev-up: db-up ## Start Postgres and create the Atlas development database if missing
+	@docker compose --profile dev exec -T postgres-dev \
+	  psql -U $(POSTGRES_USER) -tc \
+	  "SELECT 1 FROM pg_database WHERE datname='$(POSTGRES_DEV_DB)'" | grep -q 1 \
+	  || docker compose --profile dev exec -T postgres-dev \
+	  psql -U $(POSTGRES_USER) -c "CREATE DATABASE $(POSTGRES_DEV_DB);"
 
 db-down: ## Stop local Postgres
 	docker compose --profile dev stop postgres-dev
@@ -44,3 +54,27 @@ test-verbose:                                                           ## Run a
 
 test-coverage:                                                          ## Run all tests with coverage report
 	cd $(MIGRATE_DIR) && go test ./... -cover -count=1
+
+# ── Database Migrations (Atlas) ──────────────────────────
+
+migrate-diff: dev-up                                                    ## Generate a new migration from GORM models
+	@if [ -z "$(NAME)" ]; then echo "Usage: make migrate-diff NAME=<description>"; exit 1; fi
+	cd $(MIGRATE_DIR) && atlas migrate diff $(NAME) --env local
+
+migrate-up: dev-up                                                      ## Apply pending migrations (local)
+	cd $(MIGRATE_DIR) && atlas migrate apply --env local
+
+migrate-down: dev-up                                                    ## Rollback the last migration (local)
+	cd $(MIGRATE_DIR) && atlas migrate down --env local 1
+
+migrate-status: dev-up                                                  ## Show migration status (local)
+	cd $(MIGRATE_DIR) && atlas migrate status --env local
+
+migrate-prod-up:                                                        ## Apply pending migrations (production)
+	cd $(MIGRATE_DIR) && atlas migrate apply --env production
+
+migrate-prod-down:                                                      ## Rollback the last migration (production)
+	cd $(MIGRATE_DIR) && atlas migrate down --env production 1
+
+migrate-prod-status:                                                    ## Show migration status (production)
+	cd $(MIGRATE_DIR) && atlas migrate status --env production
