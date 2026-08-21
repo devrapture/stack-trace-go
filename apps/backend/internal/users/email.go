@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+	"net/mail"
 	"strings"
 )
 
@@ -10,12 +11,14 @@ func NormalizeEmail(raw string) (display, normalized string, err error) {
 	if email == "" {
 		return "", "", fmt.Errorf("email is required")
 	}
-
-	atIndex := strings.LastIndex(email, "@")
-
-	if atIndex <= 0 || atIndex == len(email)-1 {
+	address, err := mail.ParseAddress(email)
+	if err != nil {
+		return "", "", fmt.Errorf("invalid email: %w", err)
+	}
+	if address.Address != email {
 		return "", "", fmt.Errorf("invalid email")
 	}
+
 	display = email
 	normalized = strings.ToLower(email)
 	return display, normalized, nil

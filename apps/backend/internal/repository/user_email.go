@@ -36,7 +36,15 @@ func (r *userEmailRepo) Create(ctx context.Context, email *models.UserEmail) err
 	}
 	email.Email = display
 	email.NormalizedEmail = normalized
-	result := r.db.WithContext(ctx).Create(email)
+
+	var emailCount int64
+	result := r.db.WithContext(ctx).Model(&models.UserEmail{}).Where("user_id = ?", email.UserID).Count(&emailCount)
+	if result.Error != nil {
+		return fmt.Errorf("failed to count user emails: %w", result.Error)
+	}
+	email.IsPrimary = emailCount == 0
+
+	result = r.db.WithContext(ctx).Create(email)
 	if result.Error != nil {
 		return fmt.Errorf("failed to create user email: %w", result.Error)
 	}

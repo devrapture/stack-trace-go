@@ -23,14 +23,5 @@ func Setup(cfg *config.Config, db *gorm.DB, logger *zap.Logger) *gin.Engine {
 		GET("/readyz", ReadyzHandler(func(ctx context.Context) error {
 			return database.Ping(ctx, db)
 		}))
-	// v1 := r.Group("/api/v1")
-	// {
-	// 	v1.
-	// 		GET("/healthz", HealthzHandler()).
-	// 		GET("/readyz", ReadyzHandler(func(ctx context.Context) error {
-	// 			return database.Ping(ctx, db)
-	// 		}))
-	// }
-
 	return r
 }

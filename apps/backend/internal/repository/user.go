@@ -41,7 +41,7 @@ func (r *userRepo) GetByID(ctx context.Context, userID uuid.UUID) (*models.User,
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("%s: %w", apperrors.ErrUserNotFound, result.Error)
+		return nil, fmt.Errorf("failed to get user: %w", result.Error)
 	}
 	return &user, nil
 }
