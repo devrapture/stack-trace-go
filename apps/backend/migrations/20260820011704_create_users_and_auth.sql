@@ -47,4 +47,4 @@ CREATE INDEX "idx_user_emails_deleted_at" ON "public"."user_emails" ("deleted_at
 -- Create index "idx_user_emails_normalized_email" to table: "user_emails"
 CREATE UNIQUE INDEX "idx_user_emails_normalized_email" ON "public"."user_emails" ("normalized_email");
 -- Create index "uq_user_emails_primary" to table: "user_emails"
-CREATE UNIQUE INDEX "uq_user_emails_primary" ON "public"."user_emails" ("user_id") WHERE (is_primary = true);
+CREATE UNIQUE INDEX "uq_user_emails_primary" ON "public"."user_emails" ("user_id") WHERE (is_primary = true AND deleted_at IS NULL);

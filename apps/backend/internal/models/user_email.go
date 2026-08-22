@@ -9,7 +9,7 @@ import (
 type UserEmail struct {
 	Base
 
-	UserID          uuid.UUID  `json:"user_id" gorm:"type:uuid;not null;uniqueIndex:uq_user_emails_primary,where:is_primary = true"`
+	UserID          uuid.UUID  `json:"user_id" gorm:"type:uuid;not null;uniqueIndex:uq_user_emails_primary,where:is_primary = true AND deleted_at IS NULL"`
 	Email           string     `json:"email" gorm:"not null;"`
 	NormalizedEmail string     `json:"-" gorm:"not null;uniqueIndex"`
 	IsPrimary       bool       `json:"is_primary" gorm:"not null"`
