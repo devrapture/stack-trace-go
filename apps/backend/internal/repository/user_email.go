@@ -51,6 +51,9 @@ func (r *userEmailRepo) Create(ctx context.Context, email *models.UserEmail) err
 		email.IsPrimary = false
 		result = r.db.WithContext(ctx).Create(email)
 	}
+	if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+		return fmt.Errorf("email already exists: %w", result.Error)
+	}
 	if result.Error != nil {
 		return fmt.Errorf("failed to create user email: %w", result.Error)
 	}
