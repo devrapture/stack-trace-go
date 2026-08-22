@@ -38,6 +38,9 @@ func (r *authIdentityRepo) Create(
 	identity *models.AuthIdentity,
 ) error {
 	err := r.db.WithContext(ctx).Create(identity).Error
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return fmt.Errorf("auth identity already exists: %w", err)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to create auth identity: %w", err)
 	}
