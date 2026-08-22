@@ -36,7 +36,7 @@ CREATE TABLE "public"."user_emails" (
   "user_id" uuid NOT NULL,
   "email" text NOT NULL,
   "normalized_email" text NOT NULL,
-  "is_primary" boolean NOT NULL DEFAULT true,
+  "is_primary" boolean NOT NULL,
   "verified" boolean NOT NULL DEFAULT false,
   "verified_at" timestamptz NULL,
   PRIMARY KEY ("id"),

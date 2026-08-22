@@ -9,8 +9,11 @@ import (
 	"github.com/devrapture/stack-trace/internal/models"
 	"github.com/devrapture/stack-trace/internal/users"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
+
+const primaryEmailConstraint = "uq_user_emails_primary"
 
 type UserEmailRepository interface {
 	Create(ctx context.Context, email *models.UserEmail) error
@@ -43,12 +46,22 @@ func (r *userEmailRepo) Create(ctx context.Context, email *models.UserEmail) err
 		return fmt.Errorf("failed to count user emails: %w", result.Error)
 	}
 	email.IsPrimary = emailCount == 0
-
 	result = r.db.WithContext(ctx).Create(email)
+	if isPrimaryEmailConflict(result.Error) {
+		email.IsPrimary = false
+		result = r.db.WithContext(ctx).Create(email)
+	}
 	if result.Error != nil {
 		return fmt.Errorf("failed to create user email: %w", result.Error)
 	}
 	return nil
+}
+
+func isPrimaryEmailConflict(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) &&
+		pgErr.Code == "23505" &&
+		pgErr.ConstraintName == primaryEmailConstraint
 }
 
 func (r *userEmailRepo) GetByNormalizedEmail(ctx context.Context, email string) (*models.UserEmail, error) {

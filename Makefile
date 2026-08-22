@@ -73,7 +73,10 @@ migrate-status: dev-up                                                  ## Show 
 migrate-prod-up:                                                        ## Apply pending migrations (production)
 	cd $(MIGRATE_DIR) && atlas migrate apply --env production
 
-migrate-prod-down:                                                      ## Rollback the last migration (production)
+migrate-prod-down:         
+	@if [ "$(CONFIRM_PRODUCTION_DOWN)" != "1" ]; then \
+	  echo "Set CONFIRM_PRODUCTION_DOWN=1 to roll back production"; exit 1; \
+	fi                                             ## Rollback the last migration (production)
 	cd $(MIGRATE_DIR) && atlas migrate down --env production 1
 
 migrate-prod-status:                                                    ## Show migration status (production)

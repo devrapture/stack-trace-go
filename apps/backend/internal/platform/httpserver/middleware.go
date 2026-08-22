@@ -38,7 +38,10 @@ func ZapLogger(logger *zap.Logger) gin.HandlerFunc {
 		// Process the request
 		c.Next()
 
-		requestID, _ := c.Get(requestIDContextKey)
+		requestID, exists := c.Get(requestIDContextKey)
+		if !exists {
+			requestID = "unknown"
+		}
 
 		duration := time.Since(start)
 		statusCode := c.Writer.Status()
