@@ -13,7 +13,11 @@ import (
 
 func ConnectDb(cfg *config.Config) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(cfg.DatabaseURL), &gorm.Config{
-		Logger: logger.Default.LogMode(getLogLevel(cfg.IsProduction())),
+		Logger:         logger.Default.LogMode(getLogLevel(cfg.IsProduction())),
+		TranslateError: true,
+		NowFunc: func() time.Time {
+			return time.Now().UTC()
+		},
 	})
 	if err != nil {
 		return nil, err
@@ -30,7 +34,9 @@ func ConnectDb(cfg *config.Config) (*gorm.DB, error) {
 	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
 
 	// Verify connection works
-	if err := sqlDB.Ping(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := sqlDB.PingContext(ctx); err != nil {
 		_ = sqlDB.Close()
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}

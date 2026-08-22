@@ -7,6 +7,9 @@ import (
 )
 
 func Hex(n int) (string, error) {
+	if n < 0 {
+		return "", fmt.Errorf("random byte count must not be negative")
+	}
 	bytes := make([]byte, n)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", fmt.Errorf("failed to read random bytes: %w", err)
