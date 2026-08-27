@@ -65,7 +65,7 @@ services:
     image: postgres:18
     environment: *postgres-environment
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - postgres-dev-data:/var/lib/postgresql
     healthcheck: *postgres-healthcheck

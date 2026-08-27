@@ -14,6 +14,7 @@ func main() {
 		&models.User{},
 		&models.UserEmail{},
 		&models.AuthIdentity{},
+		&models.PasswordCredential{},
 	)
 	if err != nil {
 		fmt.Fprintf(
