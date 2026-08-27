@@ -16,3 +16,11 @@ func Hex(n int) (string, error) {
 	}
 	return hex.EncodeToString(bytes), nil
 }
+
+func Bytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return nil, fmt.Errorf("read random bytes: %w", err)
+	}
+	return b, nil
+}

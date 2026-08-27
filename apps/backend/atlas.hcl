@@ -10,8 +10,8 @@ data "external_schema" "gorm" {
 env "local" {
   src = data.external_schema.gorm.url
 
-  url = "postgresql://wordsearch:wordsearch@localhost:5433/wordsearch?sslmode=disable"
-  dev = "postgresql://wordsearch:wordsearch@localhost:5433/wordsearch_dev?sslmode=disable"
+  url = "postgresql://wordsearch:wordsearch@localhost:5434/wordsearch?sslmode=disable"
+  dev = "postgresql://wordsearch:wordsearch@localhost:5434/wordsearch_dev?sslmode=disable"
 
   migration {
     dir = "file://migrations"

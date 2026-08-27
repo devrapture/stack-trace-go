@@ -70,7 +70,7 @@ Compose:
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `APP_PORT` | `8080` | Host port mapped to the API |
-| `POSTGRES_PORT` | `5433` | Development PostgreSQL host port (avoids colliding with a local Homebrew/Postgres.app instance on 5432) |
+| `POSTGRES_PORT` | `5434` | Development PostgreSQL host port (avoids colliding with local Postgres on 5432 and other Compose stacks on 5433) |
 | `POSTGRES_USER` | `wordsearch` | PostgreSQL user |
 | `POSTGRES_PASSWORD` | `wordsearch` | PostgreSQL password |
 | `POSTGRES_DB` | `wordsearch` | PostgreSQL database |
@@ -124,7 +124,7 @@ air
 `make dev-up` starts Postgres and creates the Atlas development database
 (`wordsearch_dev`) if it is missing. Make sure `DATABASE_URL` in
 `apps/backend/.env` points to the published development database port
-(`5433` by default). Host-side tools (Atlas, `air` outside Compose) must
+(`5434` by default). Host-side tools (Atlas, `air` outside Compose) must
 use that port; `localhost:5432` is often a separate Homebrew or
 Postgres.app cluster that does not have the `wordsearch` role.
 
