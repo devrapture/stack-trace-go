@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
+	"math"
 	"strings"
 	"unicode/utf8"
 
@@ -83,13 +84,19 @@ func Verify(
 		return false, err
 	}
 
+	storedHashLen := len(storedHash)
+	if storedHashLen > math.MaxUint32 {
+		return false, apperrors.ErrInvalidHash
+	}
+	hashLength := uint32(storedHashLen)
+
 	computedHash := argon2.IDKey(
 		[]byte(plaintext),
 		salt,
 		params.Iterations,
 		params.Memory,
 		params.Parallelism,
-		uint32(len(storedHash)),
+		hashLength,
 	)
 
 	return subtle.ConstantTimeCompare(
